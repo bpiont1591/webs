@@ -1,0 +1,857 @@
+<!doctype html>
+<html lang="pl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Lightning⚡ — Discord Bot Developer</title>
+  <meta name="description" content="Minimalne portfolio Discord Bot Developera — boty na zamówienie, automatyzacje, wdrożenia i utrzymanie." />
+
+  <style>
+    :root{
+      --bg:#070914;
+      --panel:#0b1024;
+      --text:#F9FAFB;
+      --muted:#9CA3AF;
+
+      /* ⚡ Yellow Storm */
+      --accent:#FFD84D;
+      --accent2:#FFB703;
+
+      --border:rgba(255,255,255,.08);
+      --shadow:0 18px 60px rgba(0,0,0,.45);
+      --radius:18px;
+    }
+
+    /* Base */
+    *{box-sizing:border-box;min-width:0}
+    html{-webkit-text-size-adjust:100%}
+    body{
+      margin:0;
+      font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;
+      color:var(--text);
+      background:
+        radial-gradient(1200px 800px at 15% 10%, rgba(255,216,77,.16), transparent 55%),
+        radial-gradient(900px 600px at 85% 30%, rgba(255,183,3,.10), transparent 55%),
+        linear-gradient(180deg,#050615,#070914 40%,#050615);
+      overflow-x:hidden;
+    }
+    a{color:inherit;text-decoration:none}
+    .container{max-width:980px;margin:0 auto;padding:24px}
+
+    /* NAV */
+    .nav{
+      position:sticky;top:0;z-index:20;
+      backdrop-filter:blur(10px);
+      background:rgba(7,9,20,.6);
+      border-bottom:1px solid var(--border);
+    }
+    .nav-inner{
+      display:flex;align-items:center;justify-content:space-between;
+      gap:14px;
+    }
+    .brand{display:flex;align-items:center;gap:12px;font-weight:900}
+    .logo{
+      width:40px;height:40px;border-radius:14px;
+      background:linear-gradient(135deg,var(--accent),var(--accent2));
+      box-shadow:0 10px 30px rgba(255,216,77,.40);
+      display:flex;align-items:center;justify-content:center;
+      color:#0b1024;font-size:20px;
+      flex:0 0 auto; user-select:none;
+    }
+    .menu{
+      display:flex;gap:10px;flex-wrap:nowrap;
+      overflow-x:auto;-webkit-overflow-scrolling:touch;
+      scrollbar-width:none;
+    }
+    .menu::-webkit-scrollbar{display:none}
+    .menu a{
+      padding:10px 12px;border-radius:12px;
+      color:var(--muted);
+      border:1px solid transparent;
+      white-space:nowrap;
+      flex:0 0 auto;
+    }
+    .menu a:hover{
+      background:rgba(255,255,255,.05);
+      color:var(--text);
+      border-color:var(--border);
+    }
+
+    /* Buttons */
+    .btn{
+      display:inline-flex;align-items:center;justify-content:center;
+      padding:12px 14px;border-radius:14px;
+      border:1px solid var(--border);
+      background:rgba(255,255,255,.03);
+      transition:.2s;
+      white-space:nowrap;
+      cursor:pointer;
+    }
+    .btn:hover{transform:translateY(-1px);background:rgba(255,255,255,.06)}
+    .btn.primary{
+      border-color:rgba(255,216,77,.6);
+      background:linear-gradient(135deg, rgba(255,216,77,.95), rgba(255,183,3,.65));
+      box-shadow:0 18px 55px rgba(255,183,3,.45);
+      color:#0b1024;
+      font-weight:900;
+    }
+
+    /* Cards + sections */
+    section{padding:18px 0}
+    .card{
+      background:linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.02));
+      border:1px solid var(--border);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+      display:flex;
+      flex-direction:column;
+    }
+
+    /* HERO */
+    .hero{padding:42px 0 10px}
+    .hero-card{padding:26px}
+    .kicker{
+      display:inline-flex;gap:10px;align-items:center;
+      padding:8px 12px;border-radius:999px;
+      border:1px solid var(--border);
+      background:rgba(255,255,255,.03);
+      color:var(--muted);
+      font-size:13px;
+    }
+    h1{
+      margin:14px 0 10px;
+      font-size:clamp(34px,4.6vw,52px);
+      line-height:1.05;
+      letter-spacing:-.6px;
+    }
+    .grad{
+      background:linear-gradient(90deg,#fff,var(--accent),var(--accent2));
+      -webkit-background-clip:text;background-clip:text;color:transparent;
+    }
+    .sub{color:var(--muted);line-height:1.65;max-width:62ch;margin:10px 0 18px}
+    .hero-actions{display:flex;gap:12px;flex-wrap:wrap}
+
+    /* GRID */
+    .grid{display:grid;gap:14px}
+    .grid-2{
+      grid-template-columns:1fr 1fr;
+      align-items:stretch;
+    }
+    @media (max-width:900px){.grid-2{grid-template-columns:1fr}}
+
+    /* SKILLS */
+    .skills{padding:18px;height:fit-content}
+    .skill{margin:12px 0}
+    .skill-top{
+      display:grid;grid-template-columns:1fr auto;
+      gap:10px;align-items:center;margin-bottom:8px;
+    }
+    .skill-top b{
+      font-size:14px;line-height:1.2;
+      overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+    }
+    .skill-top i{
+      font-style:normal;color:var(--muted);font-size:13px;white-space:nowrap;
+    }
+    .bar{
+      height:12px;border-radius:999px;
+      border:1px solid var(--border);
+      background:rgba(255,255,255,.03);
+      overflow:hidden;
+    }
+    .bar > div{
+      height:100%;width:0%;
+      border-radius:999px;
+      background:linear-gradient(90deg,var(--accent),var(--accent2));
+      box-shadow:0 14px 40px rgba(255,183,3,.40);
+      transition:width 900ms ease;
+    }
+
+    /* TAGS */
+    .tag{
+      display:inline-flex;align-items:center;justify-content:center;
+      padding:8px 10px;border-radius:999px;
+      border:1px solid var(--border);
+      background:rgba(255,255,255,.03);
+      font-size:12px;font-weight:800;
+      color:var(--muted);
+      line-height:1;
+    }
+
+    /* STATUS */
+    .status{
+      margin-top:14px;padding-top:14px;
+      border-top:1px solid var(--border);
+      display:flex;gap:10px;flex-wrap:wrap;
+    }
+
+    /* PROCESS */
+    .process{
+      margin-top:14px;padding-top:14px;
+      border-top:1px solid var(--border);
+      display:grid;gap:8px;
+    }
+    .step{
+      display:flex;gap:10px;align-items:center;
+      padding:8px 10px;border-radius:14px;
+      border:1px solid var(--border);
+      background:rgba(255,255,255,.03);
+      color:var(--muted);
+    }
+    .step span{
+      color:var(--accent);
+      font-weight:900;
+      width:28px;
+    }
+
+    /* FEATURES */
+    .feature-card{
+      border:1px solid var(--border);
+      background:rgba(255,255,255,.03);
+      border-radius:14px;
+      padding:12px;
+    }
+    .feature-card b{display:block;margin-bottom:8px}
+    .feature-tags{display:flex;gap:10px;flex-wrap:wrap}
+
+    .features{padding:18px;}
+    .features .features-body{flex:1;display:flex;flex-direction:column;}
+
+    /* PRICING */
+    @media (max-width:900px){
+      #pricingGrid{grid-template-columns:1fr !important;}
+    }
+
+    /* MODALS */
+    #modalDetails, #modalOrder{
+      position:fixed;inset:0;display:none;
+      align-items:center;justify-content:center;
+      padding:16px;z-index:60;
+    }
+    .modalBackdrop{
+      position:absolute;inset:0;background:rgba(0,0,0,.65);
+      backdrop-filter:blur(6px);
+    }
+
+    /* Form */
+    .field{display:grid;gap:6px;margin-top:10px}
+    .field label{font-size:13px;color:var(--muted);font-weight:800}
+    .input, .textarea{
+      width:100%;
+      border-radius:14px;
+      border:1px solid var(--border);
+      background:rgba(255,255,255,.03);
+      color:var(--text);
+      padding:12px;
+      outline:none;
+    }
+    .textarea{min-height:110px;resize:vertical}
+    .hint{color:var(--muted);font-size:12px;line-height:1.55;margin-top:8px}
+    .ok{color:#b7f7c8}
+    .warn{color:#ffd6a5}
+
+    /* Footer */
+    footer{
+      margin-top:18px;
+      padding:22px 0 36px;
+      border-top:1px solid var(--border);
+      color:var(--muted);
+    }
+    .foot{
+      display:flex;justify-content:space-between;gap:12px;
+      flex-wrap:wrap;align-items:center;
+    }
+
+    /* Mobile */
+    @media (max-width:520px){
+      .container{padding:16px}
+      .hero-card{padding:18px}
+      .btn{padding:10px 12px;border-radius:12px}
+      .kicker{font-size:12px}
+      .tag{padding:7px 9px;font-size:11px}
+      .bar{height:10px}
+    }
+  </style>
+</head>
+
+<body>
+  <div class="nav">
+    <div class="container nav-inner">
+      <div class="brand">
+        <div class="logo">⚡</div>
+        <div>
+          <div style="line-height:1">Lightning⚡</div>
+          <div style="font-size:12px;color:var(--muted);font-weight:700;margin-top:2px">Discord Bot Developer</div>
+        </div>
+      </div>
+
+      <nav class="menu">
+        <a href="#skills">Skills</a>
+        <a href="#pricing">Cennik</a>
+      </nav>
+
+      <a class="btn primary" href="https://discord.gg/72MHB8DDaJ" target="_blank" rel="noreferrer">Discord</a>
+    </div>
+  </div>
+
+  <main class="container">
+    <!-- HERO -->
+    <section class="hero">
+      <div class="card hero-card">
+        <div class="kicker">⚡ Boty Discord • automatyzacje • wdrożenia</div>
+        <h1>Minimalnie. Stabilnie. <span class="grad">Z burzą</span>.</h1>
+        <p class="sub">
+          Boty, które działają 24/7: moderacja, tickety, role i integracje.
+          Wdrożenie + utrzymanie — jeśli chcesz, biorę to na siebie.
+        </p>
+        <div class="hero-actions">
+          <a class="btn primary" href="https://discord.gg/72MHB8DDaJ" target="_blank" rel="noreferrer">Napisz na Discord</a>
+          <a class="btn" href="https://github.com/twojprofil" target="_blank" rel="noreferrer">GitHub</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- SKILLS + MOŻLIWOŚCI -->
+    <section id="skills">
+      <div class="grid grid-2">
+        <!-- LEFT: Skills -->
+        <div class="card skills">
+          <div class="skill" data-skill="95">
+            <div class="skill-top"><b>Discord.js / TypeScript</b><i>95%</i></div>
+            <div class="bar"><div></div></div>
+          </div>
+          <div class="skill" data-skill="90">
+            <div class="skill-top"><b>API / Integracje</b><i>90%</i></div>
+            <div class="bar"><div></div></div>
+          </div>
+          <div class="skill" data-skill="85">
+            <div class="skill-top"><b>Bazy danych</b><i>85%</i></div>
+            <div class="bar"><div></div></div>
+          </div>
+          <div class="skill" data-skill="80">
+            <div class="skill-top"><b>Hosting / DevOps</b><i>80%</i></div>
+            <div class="bar"><div></div></div>
+          </div>
+
+          <div class="status">
+            <span class="tag">🟢 Dostępny</span>
+            <span class="tag">⏱️ Odpowiedź do 24h</span>
+            <span class="tag">⚡ Realizacja 14 dni</span>
+          </div>
+
+          <div class="process">
+            <div class="step"><span>01</span> Kontakt</div>
+            <div class="step"><span>02</span> Ustalenie zakresu</div>
+            <div class="step"><span>03</span> Implementacja</div>
+            <div class="step"><span>04</span> Wdrożenie</div>
+          </div>
+        </div>
+
+        <!-- RIGHT: Możliwości -->
+        <div class="card features">
+          <div class="features-body">
+            <h2 style="margin:0 0 10px">Możliwości</h2>
+            <p style="margin:0; color:var(--muted); line-height:1.7">
+              Bot dopasowany do serwera: moderacja, automatyzacje i narzędzia administracyjne.
+              Modułowa budowa, stabilne wdrożenie i opcjonalne utrzymanie.
+            </p>
+
+            <div style="margin-top:14px; display:grid; gap:10px">
+              <div class="feature-card">
+                <b>🛡️ Moderacja</b>
+                <div class="feature-tags">
+                  <span class="tag">Antylink</span>
+                  <span class="tag">Antyreklama</span>
+                  <span class="tag">Logi</span>
+                  <span class="tag">Admin</span>
+                </div>
+              </div>
+
+              <div class="feature-card">
+                <b>⚙️ Automatyzacje</b>
+                <div class="feature-tags">
+                  <span class="tag">Tickety</span>
+                  <span class="tag">Weryfikacja</span>
+                  <span class="tag">Powitania</span>
+                  <span class="tag">Propozycje</span>
+                </div>
+              </div>
+
+              <div class="feature-card">
+                <b>📈 Narzędzia</b>
+                <div class="feature-tags">
+                  <span class="tag">Statystyki</span>
+                  <span class="tag">Embeds</span>
+                  <span class="tag">Ankiety</span>
+                  <span class="tag">Opinie</span>
+                </div>
+              </div>
+
+              <div class="feature-card">
+                <b>🧠 Systemy custom</b>
+                <div class="feature-tags">
+                  <span class="tag">Ekonomia</span>
+                  <span class="tag">Levelowanie</span>
+                  <span class="tag">Questy</span>
+                  <span class="tag">Rankingi</span>
+                </div>
+              </div>
+            </div>
+
+            <div style="flex:1"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- PRICING -->
+    <section id="pricing">
+      <div class="card" style="padding:18px">
+        <h2 style="margin:0 0 10px">Cennik</h2>
+        <p style="margin:0 0 14px; color:var(--muted); line-height:1.7">
+          Wybierz pakiet → Szczegóły → Zamów (zgłoszenie leci na kanał Discord).
+        </p>
+
+        <div id="pricingGrid" class="grid" style="grid-template-columns:repeat(3,1fr)"></div>
+
+        <div class="hint warn">
+          Tip: jeśli wysyłka zamówienia nie zadziała, nadal możesz napisać na Discord (przycisk u góry).
+        </div>
+      </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer id="contact">
+      <div class="foot">
+        <div>© <span id="year"></span> Lightning⚡</div>
+        <div style="display:flex; gap:10px; flex-wrap:wrap">
+          <a class="btn primary" href="https://discord.gg/72MHB8DDaJ" target="_blank" rel="noreferrer">Discord</a>
+          <a class="btn" href="https://github.com/twojprofil" target="_blank" rel="noreferrer">GitHub</a>
+        </div>
+      </div>
+    </footer>
+  </main>
+
+  <!-- MODAL: DETAILS -->
+  <div id="modalDetails">
+    <div class="modalBackdrop" data-close="details"></div>
+    <div class="card" style="position:relative;max-width:720px;width:100%;padding:18px;z-index:1">
+      <div style="display:flex;justify-content:space-between;gap:10px;align-items:flex-start">
+        <div>
+          <h3 id="detailsTitle" style="margin:0 0 6px"></h3>
+          <div id="detailsPrice" style="color:var(--muted);font-weight:800"></div>
+        </div>
+        <button class="btn" data-close="details">Zamknij</button>
+      </div>
+
+      <div id="detailsFeatures" style="margin-top:12px;color:var(--muted);line-height:1.7"></div>
+
+      <div style="margin-top:16px;display:flex;gap:10px;flex-wrap:wrap">
+        <button id="detailsOrderBtn" class="btn primary">Zamów</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: ORDER -->
+  <div id="modalOrder">
+    <div class="modalBackdrop" data-close="order"></div>
+    <div class="card" style="position:relative;max-width:720px;width:100%;padding:18px;z-index:1">
+      <div style="display:flex;justify-content:space-between;gap:10px;align-items:flex-start">
+        <div>
+          <h3 id="orderTitle" style="margin:0 0 6px">Zamówienie</h3>
+          <div id="orderMeta" style="color:var(--muted);font-weight:800"></div>
+        </div>
+        <button class="btn" data-close="order">Zamknij</button>
+      </div>
+
+      <!-- honeypot (anty-bot) -->
+      <input id="hpWebsite" class="input" style="display:none" autocomplete="off" tabindex="-1" />
+
+      <div class="field">
+        <label>Nick / ID (opcjonalnie)</label>
+        <input id="fUser" class="input" placeholder="np. Lightning#0001 / 123..." />
+      </div>
+
+      <div class="field">
+        <label>Serwer (link / ID) (opcjonalnie)</label>
+        <input id="fGuild" class="input" placeholder="np. https://discord.gg/... lub ID" />
+      </div>
+
+      <div class="field">
+        <label>Opis wymagań (wymagane)</label>
+        <textarea id="fDesc" class="textarea" placeholder="Co ma robić bot? Jakie funkcje?"></textarea>
+      </div>
+
+      <div class="field">
+        <label>Termin (opcjonalnie)</label>
+        <input id="fDeadline" class="input" placeholder="np. 7 dni / do piątku" />
+      </div>
+
+      <div style="margin-top:16px;display:flex;gap:10px;flex-wrap:wrap">
+        <button id="sendOrderBtn" class="btn primary">Wyślij zamówienie</button>
+        <button id="copyOrderBtn" class="btn">Kopiuj treść (backup)</button>
+      </div>
+
+      <div id="orderStatus" class="hint"></div>
+    </div>
+  </div>
+
+  <script>
+    // Year
+    document.getElementById("year").textContent = new Date().getFullYear();
+
+    // Skills bars
+    window.addEventListener("load", () => {
+      document.querySelectorAll(".skill").forEach(s => {
+        const pct = s.getAttribute("data-skill") || "0";
+        const bar = s.querySelector(".bar > div");
+        if (bar) bar.style.width = pct + "%";
+      });
+    });
+
+    // ================= PACKAGES =================
+    const packages = [
+      {
+        id: "starter",
+        label: "Start",
+        emoji: "🌱",
+        price: 25,
+        psc: 35,
+        features: [
+          "Komendy administracyjne",
+          "Statystyki serwera",
+          "Weryfikacja użytkowników",
+          "Powitania i pożegnania",
+          "Generator embedów",
+          "System propozycji"
+        ]
+      },
+      {
+        id: "standard",
+        label: "Standard",
+        emoji: "⚙️",
+        price: 45,
+        psc: 50,
+        features: [
+          "Wszystko z pakietu Start",
+          "Antylink i antyreklama",
+          "Konkursy",
+          "Logi moderacyjne"
+        ]
+      },
+      {
+        id: "advanced",
+        label: "Zaawansowany",
+        emoji: "🚀",
+        price: 75,
+        psc: 85,
+        features: [
+          "Wszystko z pakietu Standard",
+          "Tickety",
+          "Ankiety",
+          "Logi serwerowe",
+          "System boostowania"
+        ]
+      },
+      {
+        id: "business",
+        label: "Biznes",
+        emoji: "💼",
+        price: 100,
+        psc: 120,
+        features: [
+          "Tickety",
+          "Legit check",
+          "Sticky messages",
+          "Opinie",
+          "Kalkulator prowizji",
+          "Losowania"
+        ]
+      },
+      {
+        id: "commerce",
+        label: "Sklep",
+        emoji: "🛒",
+        price: 120,
+        psc: 140,
+        features: [
+          "Wszystko z pakietu Biznes",
+          "Cenniki",
+          "Ping menu",
+          "Automatyczne dane płatności",
+          "Logi ticketów"
+        ]
+      },
+      {
+        id: "enterprise",
+        label: "Na zamówienie",
+        emoji: "🧩",
+        price: null,
+        psc: null,
+        customPriceText: "💸 Cena: do ustalenia",
+        features: [
+          "System szyty na miarę",
+          "Hosting",
+          "Wsparcie techniczne",
+          "Dowolne integracje"
+        ]
+      }
+    ];
+
+    // ================= UI HELPERS =================
+    const modalDetails = document.getElementById("modalDetails");
+    const detailsTitle = document.getElementById("detailsTitle");
+    const detailsPrice = document.getElementById("detailsPrice");
+    const detailsFeatures = document.getElementById("detailsFeatures");
+    const detailsOrderBtn = document.getElementById("detailsOrderBtn");
+
+    const modalOrder = document.getElementById("modalOrder");
+    const orderMeta = document.getElementById("orderMeta");
+    const sendOrderBtn = document.getElementById("sendOrderBtn");
+    const copyOrderBtn = document.getElementById("copyOrderBtn");
+    const orderStatus = document.getElementById("orderStatus");
+
+    const fUser = document.getElementById("fUser");
+    const fGuild = document.getElementById("fGuild");
+    const fDesc = document.getElementById("fDesc");
+    const fDeadline = document.getElementById("fDeadline");
+    const hpWebsite = document.getElementById("hpWebsite");
+
+    let selectedPack = null;
+
+    function openModal(el){
+      el.style.display = "flex";
+      document.body.style.overflow = "hidden";
+    }
+    function closeModal(el){
+      el.style.display = "none";
+      document.body.style.overflow = "";
+    }
+
+    document.addEventListener("click", (e) => {
+      const closeBtn = e.target.closest("[data-close]");
+      if (closeBtn) {
+        const which = closeBtn.getAttribute("data-close");
+        if (which === "details") closeModal(modalDetails);
+        if (which === "order") closeModal(modalOrder);
+      }
+    });
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") {
+        closeModal(modalDetails);
+        closeModal(modalOrder);
+      }
+    });
+
+    function priceLine(p){
+      return p.id === "enterprise"
+        ? (p.customPriceText || "Cena do ustalenia")
+        : `💸 ${p.price} PLN • 💳 PSC: ${p.psc} PLN`;
+    }
+
+    function buildOrderText(pack, extra){
+      const pr = pack.id === "enterprise"
+        ? "Cena: do ustalenia"
+        : `Cena: ${pack.price} PLN | PSC: ${pack.psc} PLN`;
+
+      return [
+        "⚡ ZAMÓWIENIE BOTA",
+        `📦 Pakiet: ${pack.label} (${pack.id})`,
+        `💸 ${pr}`,
+        "",
+        "📌 Dane:",
+        `• Nick/ID: ${extra.user || "—"}`,
+        `• Serwer: ${extra.guild || "—"}`,
+        `• Termin: ${extra.deadline || "—"}`,
+        "",
+        "📝 Opis:",
+        (extra.desc || "—"),
+        "",
+        "✅ Funkcje pakietu:",
+        "• " + pack.features.join("\n• ")
+      ].join("\n");
+    }
+
+    async function copyText(text) {
+      try {
+        await navigator.clipboard.writeText(text);
+        return true;
+      } catch {
+        const ta = document.createElement("textarea");
+        ta.value = text;
+        document.body.appendChild(ta);
+        ta.select();
+        const ok = document.execCommand("copy");
+        ta.remove();
+        return ok;
+      }
+    }
+
+    // ================= PRICING RENDER =================
+    const grid = document.getElementById("pricingGrid");
+    if (grid) {
+      packages.forEach(p => {
+        const el = document.createElement("div");
+        el.className = "feature-card";
+        el.style.padding = "14px";
+        el.style.borderRadius = "16px";
+
+        el.innerHTML = `
+          <div style="display:flex;justify-content:space-between;gap:10px;align-items:flex-start">
+            <b style="font-size:16px">${p.emoji} ${p.label}</b>
+            <span class="tag">Pakiet</span>
+          </div>
+          <div style="margin-top:8px;color:var(--muted);font-weight:800">${priceLine(p)}</div>
+          <div style="margin-top:10px;color:var(--muted);line-height:1.6">
+            • ${p.features.slice(0,3).join("<br>• ")}${p.features.length > 3 ? "<br>• …" : ""}
+          </div>
+          <div style="margin-top:12px;display:flex;gap:10px;flex-wrap:wrap">
+            <button class="btn" data-details="${p.id}">Szczegóły</button>
+            <button class="btn primary" data-order="${p.id}">Zamów</button>
+          </div>
+        `;
+        grid.appendChild(el);
+      });
+    }
+
+    // ================= DETAILS MODAL =================
+    function showDetails(pack){
+      selectedPack = pack;
+      detailsTitle.textContent = `${pack.emoji} Pakiet ${pack.label}`;
+      detailsPrice.textContent = priceLine(pack);
+      detailsFeatures.innerHTML = `
+        <div style="font-weight:900;color:var(--text);margin-bottom:6px">Funkcje</div>
+        <div style="color:var(--muted)">• ${pack.features.join("<br>• ")}</div>
+      `;
+      openModal(modalDetails);
+    }
+
+    // ================= ORDER MODAL =================
+    function showOrder(pack){
+      selectedPack = pack;
+
+      // reset status + fields
+      orderStatus.textContent = "";
+      orderStatus.className = "hint";
+      fDesc.value = "";
+      hpWebsite.value = "";
+
+      orderMeta.textContent = `${pack.emoji} ${pack.label} • ${priceLine(pack)}`;
+      openModal(modalOrder);
+    }
+
+    // ================= SEND TO NETLIFY FUNCTION =================
+    async function sendOrderToNetlify(payload){
+      const r = await fetch("/.netlify/functions/order", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+      const data = await r.json().catch(() => ({}));
+      if (!r.ok || !data.ok) throw new Error(data.error || "Send failed");
+      return data;
+    }
+
+    document.addEventListener("click", (e) => {
+      const d = e.target.closest("[data-details]");
+      if (d) {
+        const id = d.getAttribute("data-details");
+        const pack = packages.find(x => x.id === id);
+        if (pack) showDetails(pack);
+      }
+
+      const o = e.target.closest("[data-order]");
+      if (o) {
+        const id = o.getAttribute("data-order");
+        const pack = packages.find(x => x.id === id);
+        if (pack) showOrder(pack);
+      }
+    });
+
+    detailsOrderBtn.addEventListener("click", () => {
+      if (!selectedPack) return;
+      closeModal(modalDetails);
+      showOrder(selectedPack);
+    });
+
+    copyOrderBtn.addEventListener("click", async () => {
+      if (!selectedPack) return;
+
+      const extra = {
+        user: fUser.value.trim(),
+        guild: fGuild.value.trim(),
+        desc: fDesc.value.trim(),
+        deadline: fDeadline.value.trim(),
+      };
+
+      const text = buildOrderText(selectedPack, extra);
+      const ok = await copyText(text);
+      orderStatus.textContent = ok
+        ? "✅ Skopiowano treść. Możesz wkleić ją na Discordzie (DM lub ticket)."
+        : "⚠️ Nie udało się skopiować automatycznie. Skopiuj ręcznie z pola opisu.";
+      orderStatus.className = "hint " + (ok ? "ok" : "warn");
+    });
+
+    sendOrderBtn.addEventListener("click", async () => {
+      if (!selectedPack) return;
+
+      // honeypot
+      if ((hpWebsite.value || "").trim().length > 0) {
+        orderStatus.textContent = "⚠️ Wykryto bota. Spróbuj ponownie.";
+        orderStatus.className = "hint warn";
+        return;
+      }
+
+      const desc = fDesc.value.trim();
+      if (desc.length < 10) {
+        orderStatus.textContent = "⚠️ Opis jest za krótki (min. 10 znaków).";
+        orderStatus.className = "hint warn";
+        return;
+      }
+
+      // prosty client-cooldown (nie idealne, ale pomaga)
+      const last = Number(localStorage.getItem("lastOrderAt") || "0");
+      const now = Date.now();
+      if (now - last < 30_000) {
+        orderStatus.textContent = "⏱️ Poczekaj chwilę i spróbuj ponownie (30s).";
+        orderStatus.className = "hint warn";
+        return;
+      }
+
+      const extra = {
+        user: fUser.value.trim(),
+        guild: fGuild.value.trim(),
+        desc,
+        deadline: fDeadline.value.trim(),
+      };
+
+      const payload = {
+        packId: selectedPack.id,
+        packLabel: selectedPack.label,
+        priceText: priceLine(selectedPack),
+        user: extra.user,
+        guild: extra.guild,
+        desc: extra.desc,
+        deadline: extra.deadline,
+        content: buildOrderText(selectedPack, extra),
+        ua: navigator.userAgent
+      };
+
+      orderStatus.textContent = "Wysyłam…";
+      orderStatus.className = "hint";
+
+      try {
+        await sendOrderToNetlify(payload);
+        localStorage.setItem("lastOrderAt", String(Date.now()));
+        orderStatus.textContent = "✅ Wysłano zamówienie! Odezwę się do Ciebie.";
+        orderStatus.className = "hint ok";
+        // opcjonalnie: zamknij po chwili
+        // setTimeout(() => closeModal(modalOrder), 900);
+      } catch (err) {
+        orderStatus.textContent = "⚠️ Nie udało się wysłać. Kliknij „Kopiuj treść (backup)” i wyślij na Discordzie.";
+        orderStatus.className = "hint warn";
+      }
+    });
+  </script>
+</body>
+</html>
