@@ -409,14 +409,10 @@
       <div class="card" style="padding:18px">
         <h2 style="margin:0 0 10px">Cennik</h2>
         <p style="margin:0 0 14px; color:var(--muted); line-height:1.7">
-          Wybierz pakiet → Szczegóły → Zamów (zgłoszenie leci na kanał Discord).
+          Wybierz pakiet → Szczegóły → Zamów (kopiuj lub wyślij email).
         </p>
 
         <div id="pricingGrid" class="grid" style="grid-template-columns:repeat(3,1fr)"></div>
-
-        <div class="hint warn">
-          Tip: jeśli wysyłka zamówienia nie zadziała, nadal możesz napisać na Discord (przycisk u góry).
-        </div>
       </div>
     </section>
 
@@ -488,8 +484,8 @@
       </div>
 
       <div style="margin-top:16px;display:flex;gap:10px;flex-wrap:wrap">
-        <button id="sendOrderBtn" class="btn primary">Wyślij zamówienie</button>
-        <button id="copyOrderBtn" class="btn">Kopiuj treść (backup)</button>
+        <button id="copyOrderBtn" class="btn primary">Kopiuj zamówienie</button>
+        <button id="emailOrderBtn" class="btn">Wyślij email</button>
       </div>
 
       <div id="orderStatus" class="hint"></div>
@@ -497,6 +493,10 @@
   </div>
 
   <script>
+    // ================= CONFIG =================
+    // ZMIEŃ NA SWÓJ EMAIL:
+    const ORDER_EMAIL = "brilkap9@icloud.com";
+
     // Year
     document.getElementById("year").textContent = new Date().getFullYear();
 
@@ -607,8 +607,8 @@
 
     const modalOrder = document.getElementById("modalOrder");
     const orderMeta = document.getElementById("orderMeta");
-    const sendOrderBtn = document.getElementById("sendOrderBtn");
     const copyOrderBtn = document.getElementById("copyOrderBtn");
+    const emailOrderBtn = document.getElementById("emailOrderBtn");
     const orderStatus = document.getElementById("orderStatus");
 
     const fUser = document.getElementById("fUser");
@@ -687,6 +687,12 @@
       }
     }
 
+    function openEmailClient(subject, body){
+      const s = encodeURIComponent(subject);
+      const b = encodeURIComponent(body);
+      window.location.href = `mailto:${ORDER_EMAIL}?subject=${s}&body=${b}`;
+    }
+
     // ================= PRICING RENDER =================
     const grid = document.getElementById("pricingGrid");
     if (grid) {
@@ -730,7 +736,6 @@
     function showOrder(pack){
       selectedPack = pack;
 
-      // reset status + fields
       orderStatus.textContent = "";
       orderStatus.className = "hint";
       fDesc.value = "";
@@ -738,18 +743,6 @@
 
       orderMeta.textContent = `${pack.emoji} ${pack.label} • ${priceLine(pack)}`;
       openModal(modalOrder);
-    }
-
-    // ================= SEND TO NETLIFY FUNCTION =================
-    async function sendOrderToNetlify(payload){
-      const r = await fetch("/.netlify/functions/order", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload)
-      });
-      const data = await r.json().catch(() => ({}));
-      if (!r.ok || !data.ok) throw new Error(data.error || "Send failed");
-      return data;
     }
 
     document.addEventListener("click", (e) => {
@@ -774,83 +767,59 @@
       showOrder(selectedPack);
     });
 
-    copyOrderBtn.addEventListener("click", async () => {
-      if (!selectedPack) return;
-
-      const extra = {
+    function getExtra(){
+      return {
         user: fUser.value.trim(),
         guild: fGuild.value.trim(),
         desc: fDesc.value.trim(),
         deadline: fDeadline.value.trim(),
       };
+    }
 
-      const text = buildOrderText(selectedPack, extra);
-      const ok = await copyText(text);
-      orderStatus.textContent = ok
-        ? "✅ Skopiowano treść. Możesz wkleić ją na Discordzie (DM lub ticket)."
-        : "⚠️ Nie udało się skopiować automatycznie. Skopiuj ręcznie z pola opisu.";
-      orderStatus.className = "hint " + (ok ? "ok" : "warn");
-    });
-
-    sendOrderBtn.addEventListener("click", async () => {
+    copyOrderBtn.addEventListener("click", async () => {
       if (!selectedPack) return;
 
-      // honeypot
+      // honeypot (opcjonalnie zostawiamy)
       if ((hpWebsite.value || "").trim().length > 0) {
         orderStatus.textContent = "⚠️ Wykryto bota. Spróbuj ponownie.";
         orderStatus.className = "hint warn";
         return;
       }
 
-      const desc = fDesc.value.trim();
-      if (desc.length < 10) {
+      const extra = getExtra();
+      if ((extra.desc || "").length < 10) {
         orderStatus.textContent = "⚠️ Opis jest za krótki (min. 10 znaków).";
         orderStatus.className = "hint warn";
         return;
       }
 
-      // prosty client-cooldown (nie idealne, ale pomaga)
-      const last = Number(localStorage.getItem("lastOrderAt") || "0");
-      const now = Date.now();
-      if (now - last < 30_000) {
-        orderStatus.textContent = "⏱️ Poczekaj chwilę i spróbuj ponownie (30s).";
+      const text = buildOrderText(selectedPack, extra);
+      const ok = await copyText(text);
+      orderStatus.textContent = ok
+        ? "✅ Skopiowano zamówienie. Możesz wkleić je na Discordzie (DM lub ticket)."
+        : "⚠️ Nie udało się skopiować automatycznie. Skopiuj ręcznie z pola opisu.";
+      orderStatus.className = "hint " + (ok ? "ok" : "warn");
+    });
+
+    emailOrderBtn.addEventListener("click", () => {
+      if (!selectedPack) return;
+
+      // honeypot (opcjonalnie)
+      if ((hpWebsite.value || "").trim().length > 0) {
+        orderStatus.textContent = "⚠️ Wykryto bota. Spróbuj ponownie.";
         orderStatus.className = "hint warn";
         return;
       }
 
-      const extra = {
-        user: fUser.value.trim(),
-        guild: fGuild.value.trim(),
-        desc,
-        deadline: fDeadline.value.trim(),
-      };
-
-      const payload = {
-        packId: selectedPack.id,
-        packLabel: selectedPack.label,
-        priceText: priceLine(selectedPack),
-        user: extra.user,
-        guild: extra.guild,
-        desc: extra.desc,
-        deadline: extra.deadline,
-        content: buildOrderText(selectedPack, extra),
-        ua: navigator.userAgent
-      };
-
-      orderStatus.textContent = "Wysyłam…";
-      orderStatus.className = "hint";
-
-      try {
-        await sendOrderToNetlify(payload);
-        localStorage.setItem("lastOrderAt", String(Date.now()));
-        orderStatus.textContent = "✅ Wysłano zamówienie! Odezwę się do Ciebie.";
-        orderStatus.className = "hint ok";
-        // opcjonalnie: zamknij po chwili
-        // setTimeout(() => closeModal(modalOrder), 900);
-      } catch (err) {
-        orderStatus.textContent = "⚠️ Nie udało się wysłać. Kliknij „Kopiuj treść (backup)” i wyślij na Discordzie.";
+      const extra = getExtra();
+      if ((extra.desc || "").length < 10) {
+        orderStatus.textContent = "⚠️ Opis jest za krótki (min. 10 znaków).";
         orderStatus.className = "hint warn";
+        return;
       }
+
+      const body = buildOrderText(selectedPack, extra);
+      openEmailClient("Zamówienie bota Discord", body);
     });
   </script>
 </body>
