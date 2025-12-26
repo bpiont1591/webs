@@ -493,10 +493,6 @@
   </div>
 
   <script>
-    // ================= CONFIG =================
-    // (email zostawiam jak miałeś - możesz usunąć jeśli już niepotrzebne)
-    const ORDER_EMAIL = "brilkap9@icloud.com";
-
     // Year
     document.getElementById("year").textContent = new Date().getFullYear();
 
@@ -608,7 +604,7 @@
     const modalOrder = document.getElementById("modalOrder");
     const orderMeta = document.getElementById("orderMeta");
     const copyOrderBtn = document.getElementById("copyOrderBtn");
-    const webhookOrderBtn = document.getElementById("webhookOrderBtn"); // ✅ NOWE
+    const webhookOrderBtn = document.getElementById("webhookOrderBtn");
     const orderStatus = document.getElementById("orderStatus");
 
     const fUser = document.getElementById("fUser");
@@ -687,13 +683,9 @@
       }
     }
 
-    function openEmailClient(subject, body){
-      const s = encodeURIComponent(subject);
-      const b = encodeURIComponent(body);
-      window.location.href = `mailto:${ORDER_EMAIL}?subject=${s}&body=${b}`;
-    }
+    // ✅ Cloudflare Pages Functions endpoint (ten sam host): /order
+    const ORDER_API = "/order";
 
-    // ✅ NOWE: wysyłka do Netlify Function (a funkcja wysyła webhook na Discordzie)
     async function sendOrderWebhook(pack, extra){
       const payload = {
         packId: pack.id,
@@ -702,10 +694,11 @@
         user: extra.user,
         guild: extra.guild,
         deadline: extra.deadline,
-        desc: extra.desc
+        desc: extra.desc,
+        hpWebsite: (hpWebsite.value || "").trim()
       };
 
-      const res = await fetch("/.netlify/functions/order", {
+      const res = await fetch(ORDER_API, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload)
@@ -826,7 +819,7 @@
       orderStatus.className = "hint " + (ok ? "ok" : "warn");
     });
 
-    // ✅ NOWE: klik -> wysyła webhook (przez Netlify Function)
+    // ✅ Wyślij webhook -> Cloudflare Pages Functions (/order)
     webhookOrderBtn.addEventListener("click", async () => {
       if (!selectedPack) return;
 
@@ -845,12 +838,12 @@
       }
 
       try {
-        orderStatus.textContent = "⏳ Wysyłam webhook...";
+        orderStatus.textContent = "⏳ Wysyłam...";
         orderStatus.className = "hint";
 
         await sendOrderWebhook(selectedPack, extra);
 
-        orderStatus.textContent = "✅ Wysłano webhook! Dzięki — odezwę się wkrótce.";
+        orderStatus.textContent = "✅ Wysłano! Dzięki — odezwę się wkrótce.";
         orderStatus.className = "hint ok";
       } catch (e) {
         orderStatus.textContent = "⚠️ Błąd wysyłki: " + (e?.message || "unknown");
