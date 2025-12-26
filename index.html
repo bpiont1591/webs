@@ -409,7 +409,7 @@
       <div class="card" style="padding:18px">
         <h2 style="margin:0 0 10px">Cennik</h2>
         <p style="margin:0 0 14px; color:var(--muted); line-height:1.7">
-          Wybierz pakiet → Szczegóły → Zamów (kopiuj lub wyślij email).
+          Wybierz pakiet → Szczegóły → Zamów (kopiuj lub wyślij webhook).
         </p>
 
         <div id="pricingGrid" class="grid" style="grid-template-columns:repeat(3,1fr)"></div>
@@ -485,7 +485,7 @@
 
       <div style="margin-top:16px;display:flex;gap:10px;flex-wrap:wrap">
         <button id="copyOrderBtn" class="btn primary">Kopiuj zamówienie</button>
-        <button id="emailOrderBtn" class="btn">Wyślij email</button>
+        <button id="webhookOrderBtn" class="btn">Wyślij webhook</button>
       </div>
 
       <div id="orderStatus" class="hint"></div>
@@ -494,7 +494,7 @@
 
   <script>
     // ================= CONFIG =================
-    // ZMIEŃ NA SWÓJ EMAIL:
+    // (email zostawiam jak miałeś - możesz usunąć jeśli już niepotrzebne)
     const ORDER_EMAIL = "brilkap9@icloud.com";
 
     // Year
@@ -608,7 +608,7 @@
     const modalOrder = document.getElementById("modalOrder");
     const orderMeta = document.getElementById("orderMeta");
     const copyOrderBtn = document.getElementById("copyOrderBtn");
-    const emailOrderBtn = document.getElementById("emailOrderBtn");
+    const webhookOrderBtn = document.getElementById("webhookOrderBtn"); // ✅ NOWE
     const orderStatus = document.getElementById("orderStatus");
 
     const fUser = document.getElementById("fUser");
@@ -691,6 +691,31 @@
       const s = encodeURIComponent(subject);
       const b = encodeURIComponent(body);
       window.location.href = `mailto:${ORDER_EMAIL}?subject=${s}&body=${b}`;
+    }
+
+    // ✅ NOWE: wysyłka do Netlify Function (a funkcja wysyła webhook na Discordzie)
+    async function sendOrderWebhook(pack, extra){
+      const payload = {
+        packId: pack.id,
+        packLabel: pack.label,
+        priceLine: priceLine(pack),
+        user: extra.user,
+        guild: extra.guild,
+        deadline: extra.deadline,
+        desc: extra.desc
+      };
+
+      const res = await fetch("/.netlify/functions/order", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+
+      if (!res.ok) {
+        const t = await res.text();
+        throw new Error(t || "Błąd wysyłki");
+      }
+      return true;
     }
 
     // ================= PRICING RENDER =================
@@ -779,7 +804,7 @@
     copyOrderBtn.addEventListener("click", async () => {
       if (!selectedPack) return;
 
-      // honeypot (opcjonalnie zostawiamy)
+      // honeypot
       if ((hpWebsite.value || "").trim().length > 0) {
         orderStatus.textContent = "⚠️ Wykryto bota. Spróbuj ponownie.";
         orderStatus.className = "hint warn";
@@ -801,10 +826,11 @@
       orderStatus.className = "hint " + (ok ? "ok" : "warn");
     });
 
-    emailOrderBtn.addEventListener("click", () => {
+    // ✅ NOWE: klik -> wysyła webhook (przez Netlify Function)
+    webhookOrderBtn.addEventListener("click", async () => {
       if (!selectedPack) return;
 
-      // honeypot (opcjonalnie)
+      // honeypot
       if ((hpWebsite.value || "").trim().length > 0) {
         orderStatus.textContent = "⚠️ Wykryto bota. Spróbuj ponownie.";
         orderStatus.className = "hint warn";
@@ -818,8 +844,18 @@
         return;
       }
 
-      const body = buildOrderText(selectedPack, extra);
-      openEmailClient("Zamówienie bota Discord", body);
+      try {
+        orderStatus.textContent = "⏳ Wysyłam webhook...";
+        orderStatus.className = "hint";
+
+        await sendOrderWebhook(selectedPack, extra);
+
+        orderStatus.textContent = "✅ Wysłano webhook! Dzięki — odezwę się wkrótce.";
+        orderStatus.className = "hint ok";
+      } catch (e) {
+        orderStatus.textContent = "⚠️ Błąd wysyłki: " + (e?.message || "unknown");
+        orderStatus.className = "hint warn";
+      }
     });
   </script>
 </body>
